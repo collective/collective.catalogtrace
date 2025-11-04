@@ -1,4 +1,5 @@
 import os
+import sys
 import textwrap
 import time
 import gc
@@ -7,9 +8,9 @@ import traceback
 import pprint
 from zope.globalrequest import getRequest
 
-TRACE_ALL_CATALOG_QUERIES = bool(os.environ.get('TRACE_CATALOG_QUERIES'))
+TRACE_ALL_CATALOG_QUERIES = bool(os.environ.get("TRACE_CATALOG_QUERIES"))
 
-logger = logging.getLogger('collective.catalogtrace')
+logger = logging.getLogger("collective.catalogtrace")
 
 
 def get_caller_info(skip=1):
@@ -18,25 +19,34 @@ def get_caller_info(skip=1):
     skipped = True
     n = 0
     for frame in traceback.extract_stack()[::-1]:
-        if 'catalogtrace' in frame.filename or 'ZCatalog' in frame.filename:
+        if "catalogtrace" in frame.filename or "ZCatalog" in frame.filename:
             continue
         if not skipped:
-            stack.append(f'      File "{frame.filename}", line {frame.lineno}, in {frame.name}')
+            stack.append(
+                f'      File "{frame.filename}", line {frame.lineno}, in {frame.name}'
+            )
             if frame.line:
-                stack.append(f'        {frame.line}')
+                stack.append(f"        {frame.line}")
             n += 1
-        if 'searchresults' in frame.name.lower():
+        if "searchresults" in frame.name.lower():
             skipped = False
         if n == 3:
             break
-    return '\n'.join(stack)
+    return "\n".join(stack)
 
 
 class QueryStepResult:
     """A result from one step of a catalog query."""
 
-    def __init__(self, step_name, start_time, end_time, result_size=None,
-                persistent_load=None, gc_objects=None):
+    def __init__(
+        self,
+        step_name,
+        start_time,
+        end_time,
+        result_size=None,
+        persistent_load=None,
+        gc_objects=None,
+    ):
         self.step_name = step_name
         self.start_time = start_time
         self.end_time = end_time
@@ -46,16 +56,16 @@ class QueryStepResult:
 
     def __str__(self):
         parts = [
-            f'Step: {self.step_name}',
-            f'Time: {self.end_time - self.start_time:.4f}s'
+            f"Step: {self.step_name}",
+            f"Time: {self.end_time - self.start_time:.4f}s",
         ]
         if self.result_size is not None:
-            parts.append(f'Results: {self.result_size}')
+            parts.append(f"Results: {self.result_size}")
         if self.persistent_load is not None:
-            parts.append(f'DB Objects: {self.persistent_load:+d}')
+            parts.append(f"DB Objects: {self.persistent_load:+d}")
         if self.gc_objects is not None:
-            parts.append(f'GC Objects: {self.gc_objects:+d}')
-        return ' | '.join(parts)
+            parts.append(f"GC Objects: {self.gc_objects:+d}")
+        return " | ".join(parts)
 
 
 class QueryTracer:
@@ -79,18 +89,18 @@ class QueryTracer:
         now = time.perf_counter()
         db_objects = self._count_db_objects()
         gc_objects = len(gc.get_objects())
-        
+
         r = QueryStepResult(
             step_name,
             start_time=self._split_time,
             end_time=now,
             result_size=len(result) if result is not None else None,
             persistent_load=db_objects - self._last_db_objects,
-            gc_objects=gc_objects - self._last_gc_objects
+            gc_objects=gc_objects - self._last_gc_objects,
         )
         self._split_time = now
         self._results.append(r)
-        
+
         # Update state for next measurement
         self._last_db_objects = db_objects
         self._last_gc_objects = gc_objects
@@ -98,12 +108,12 @@ class QueryTracer:
 
     def log_results(self):
         """Get all recorded steps."""
-        steps_text = '      ' + '\n      '.join(str(step) for step in self._results)
+        steps_text = "      " + "\n      ".join(str(step) for step in self._results)
         logger.info(
-            f'Catalog query completed in {self._split_time - self._start_time:.4f}s\n'
-            f'    Query parameters:\n{textwrap.indent(self._query, '      ')}\n'
-            f'    Query from:\n{get_caller_info()}\n'
-            f'    Details:\n{steps_text}\n'
+            f"Catalog query completed in {self._split_time - self._start_time:.4f}s\n"
+            f"    Query parameters:\n{textwrap.indent(self._query, '      ')}\n"
+            f"    Query from:\n{get_caller_info()}\n"
+            f"    Details:\n{steps_text}\n"
         )
         return self._results
 
@@ -120,7 +130,9 @@ class DisabledQueryTracer:
 
 def get_tracer(catalog, query):
     request = getRequest()
-    if TRACE_ALL_CATALOG_QUERIES or (request is not None and request.cookies.get('catalogtrace')):
+    if TRACE_ALL_CATALOG_QUERIES or (
+        request is not None and request.cookies.get("catalogtrace")
+    ):
         return QueryTracer(catalog, query)
     return DisabledQueryTracer()
 
@@ -137,7 +149,9 @@ def patch_ZCatalog():
             self._tracer = get_tracer(catalog, query)
 
         def stop_split(self, name, result=None, limit=False):
-            self._tracer.add_step(name, result)
+            if not name.endswith("#intersection"):
+                rs = sys._getframe(1).f_locals.get("rs", None)
+                self._tracer.add_step(name, result)
             return super().stop_split(name, result=result, limit=limit)
 
         def stop(self):
