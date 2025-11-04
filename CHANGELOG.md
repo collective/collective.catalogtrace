@@ -9,6 +9,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.3 (2025-11-04)
+
+
+### Bug fixes:
+
+- Only count active persistent objects, not ghosts. @davisagli 
+
 ## 1.0.2 (2025-11-04)
 
 

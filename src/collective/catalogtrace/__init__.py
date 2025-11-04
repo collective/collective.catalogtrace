@@ -1,6 +1,6 @@
 """Init and utils."""
 
-__version__ = "1.0.3.dev0"
+__version__ = "1.0.3"
 
 PACKAGE_NAME = "collective.catalogtrace"
 
