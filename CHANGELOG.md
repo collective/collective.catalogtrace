@@ -9,6 +9,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.1 (2025-11-03)
+
+
+### Bug fixes:
+
+- Ignore intersection steps, for clearer output. @davisagli 
+
 ## 1.0.0 (2025-11-03)
 
 No significant changes.
