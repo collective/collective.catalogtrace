@@ -4,23 +4,6 @@
     i18n_domain="collective.catalogtrace"
     >
 
-  <i18n:registerTranslations directory="locales" />
-
-  <include
-      package="Products.CMFCore"
-      file="permissions.zcml"
-      />
-
-
-  <include file="dependencies.zcml" />
-  <include file="profiles.zcml" />
-  <include file="permissions.zcml" />
-
-  <include package=".controlpanels" />
-  <include package=".indexers" />
-  <include package=".vocabularies" />
-  <include package=".browser" />
-
   <!-- -*- extra stuff goes here -*- -->
 
 </configure>
