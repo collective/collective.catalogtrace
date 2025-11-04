@@ -82,8 +82,8 @@ class QueryTracer:
         self._last_gc_objects = len(gc.get_objects())
 
     def _count_db_objects(self):
-        """Count objects in ZODB connection cache."""
-        return len(self._conn._cache)
+        """Count active objects in ZODB connection cache."""
+        return self._conn._cache.cache_non_ghost_count
 
     def add_step(self, step_name, result=None):
         """Record metrics for a query step."""
