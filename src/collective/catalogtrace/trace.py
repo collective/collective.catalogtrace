@@ -24,15 +24,14 @@ def get_caller_info(skip=1):
         if not skipped:
             stack.append(
                 f'      File "{frame.filename}", line {frame.lineno}, in {frame.name}'
+                + (f"\n        {frame.line}" if frame.line else "")
             )
-            if frame.line:
-                stack.append(f"        {frame.line}")
             n += 1
         if "searchresults" in frame.name.lower():
             skipped = False
         if n == 3:
             break
-    return "\n".join(stack)
+    return "\n".join(reversed(stack))
 
 
 class QueryStepResult:
@@ -151,7 +150,7 @@ def patch_ZCatalog():
         def stop_split(self, name, result=None, limit=False):
             if not name.endswith("#intersection"):
                 rs = sys._getframe(1).f_locals.get("rs", None)
-                self._tracer.add_step(name, result)
+                self._tracer.add_step(name, rs)
             return super().stop_split(name, result=result, limit=limit)
 
         def stop(self):

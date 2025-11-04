@@ -22,6 +22,39 @@ Tracing is enabled for all queries if the TRACE_CATALOG_QUERIES environment vari
 
 Tracing can be enabled for specific requests by setting the catalogtrace cookie.
 
+## Example Output
+
+```
+2025-11-04 09:39:39,984 INFO    [collective.catalogtrace:111][waitress-2] Catalog query completed in 0.0570s
+    Query parameters:
+      { 'allowedRolesAndUsers': [ 'Anonymous',
+                                  'Authenticated',
+                                  'Manager',
+                                  'user:admin'],
+        'exclude_from_nav': False,
+        'is_default_page': False,
+        'path': {'depth': 1, 'query': '/Plone/de'},
+        'portal_type': [ 'Document',
+                         'Folder',
+                         'Link' ],
+        'sort_on': 'getObjPositionInParent',
+        'sort_order': 'ascending'}
+    Query from:
+      File "/Users/davisagli/Work/dlr-internet/backend/.venv/lib/python3.12/site-packages/plone/volto/browser/navigation.py", line 84, in topLevelTabs
+        rawresult = catalog.searchResults(query)
+      File "/Users/davisagli/Work/dlr-internet/backend/.venv/lib/python3.12/site-packages/collective/solr/monkey.py", line 19, in searchResults
+        return adapter(REQUEST, **kw)
+      File "/Users/davisagli/Work/dlr-internet/backend/.venv/lib/python3.12/site-packages/collective/solr/dispatcher.py", line 40, in __call__
+        return self.context._cs_old_searchResults(request, **keywords)
+    Details:
+      Step: path | Time: 0.0098s | Results: 89 | DB Objects: +0 | GC Objects: +7
+      Step: is_default_page | Time: 0.0082s | Results: 89 | DB Objects: +0 | GC Objects: +14
+      Step: portal_type | Time: 0.0085s | Results: 21 | DB Objects: +0 | GC Objects: +17
+      Step: exclude_from_nav | Time: 0.0102s | Results: 6 | DB Objects: +0 | GC Objects: +7
+      Step: allowedRolesAndUsers | Time: 0.0102s | Results: 6 | DB Objects: +0 | GC Objects: +6
+      Step: sort_on#getObjPositionInParent#asc | Time: 0.0100s | Results: 6 | DB Objects: +0 | GC Objects: +17
+```
+
 ## Installation
 
 Install collective.catalogtrace with `pip`:
