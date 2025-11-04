@@ -1,12 +1,14 @@
+from zope.globalrequest import getRequest
+
+import gc
+import logging
 import os
+import pprint
 import sys
 import textwrap
 import time
-import gc
-import logging
 import traceback
-import pprint
-from zope.globalrequest import getRequest
+
 
 TRACE_ALL_CATALOG_QUERIES = bool(os.environ.get("TRACE_CATALOG_QUERIES"))
 
